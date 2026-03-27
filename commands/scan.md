@@ -15,26 +15,83 @@ allowed-tools:
 <objective>
 Scan the entire codebase file by file. Each file gets its own fresh Claude session via `claude --print` — no context limits, no skipped lines.
 
-This is the core of eliniscan: the reason it finds bugs other tools miss is that every file gets 100% of the context window dedicated to just that file.
+CRITICAL: Before doing ANYTHING, you MUST ask the setup questions below. Do NOT start scanning until all questions are answered. Do NOT assume defaults — ASK the user.
 </objective>
 
 <execution_context>
 @$HOME/.claude/eliniscan/workflows/scan.md
 </execution_context>
 
-<context>
-Arguments: $ARGUMENTS
+<process>
+## STEP 1: MANDATORY SETUP QUESTIONS (ask ALL of these BEFORE scanning)
 
-## How It Works
-1. Ask setup questions (or use defaults from args)
-2. List all source files in the project
-3. For each file, spawn a `claude --print` session with the scan prompt
-4. Collect findings into `ELINISCAN-FINDINGS.md` (numbered #001, #002...)
-5. Track progress in `ELINISCAN-TRACKING.md`
-6. When done, display summary and suggest next command
+You MUST use AskUserQuestion or direct questions to get answers for ALL of these. Do NOT skip any. Do NOT assume defaults. Wait for user answers.
 
-## After Completion
-Display:
+Display this header first:
+```
+═══════════════════════════════════════════════════
+  eliniscan — Full Codebase Scanner
+═══════════════════════════════════════════════════
+```
+
+Then ask these questions ONE BY ONE:
+
+**Question 1 — Scan Depth:**
+```
+Scan depth?
+  1. full  — Read every line of every file (thorough, slower)
+  2. quick — Focus on critical patterns only (faster)
+```
+
+**Question 2 — AI Model:**
+```
+Which model should scan your files?
+  1. opus   — Most thorough, catches subtle issues (slower)
+  2. sonnet — Balanced speed and quality (recommended)
+  3. haiku  — Fastest, may miss subtle issues
+```
+
+**Question 3 — File Types:**
+```
+Which file extensions to scan? (comma-separated)
+  Default: ts,tsx,js,jsx,css
+  Enter custom or press enter for default:
+```
+
+**Question 4 — Exclude Directories:**
+```
+Directories to exclude? (comma-separated)
+  Default: node_modules,.next,dist,build,.git
+  Enter additional or press enter for default:
+```
+
+**Question 5 — Severity Filter:**
+```
+Minimum severity to report?
+  1. all      — Report everything (CRITICAL → INFO)
+  2. high     — Only CRITICAL and HIGH
+  3. critical — Only CRITICAL
+```
+
+After ALL questions are answered, display a summary:
+```
+  Scan Config:
+  ─────────────────────────────
+  Depth:      {depth}
+  Model:      {model}
+  File types: {types}
+  Exclude:    {dirs}
+  Severity:   {severity}
+
+  Starting scan...
+```
+
+## STEP 2: Only AFTER setup is confirmed, follow the scan workflow
+
+@$HOME/.claude/eliniscan/workflows/scan.md
+
+## STEP 3: After scan completes, display:
+
 ```
 ✓ Scan complete: {X} files scanned, {Y} issues found
 
@@ -47,4 +104,4 @@ Display:
   Next: Run /eliniscan:fix to auto-fix issues
         Run /eliniscan:report for a summary report
 ```
-</context>
+</process>
