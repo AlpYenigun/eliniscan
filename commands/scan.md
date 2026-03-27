@@ -39,16 +39,16 @@ Then ask these questions ONE BY ONE:
 **Question 1 — Scan Depth:**
 ```
 Scan depth?
-  1. full  — Read every line of every file (thorough, slower)
-  2. quick — Focus on critical patterns only (faster)
+  1. Full  — Read every line of every file (thorough, slower)
+  2. Quick — Focus on critical patterns only (faster)
 ```
 
 **Question 2 — AI Model:**
 ```
 Which model should scan your files?
-  1. opus   — Most thorough, catches subtle issues (slower)
-  2. sonnet — Balanced speed and quality (recommended)
-  3. haiku  — Fastest, may miss subtle issues
+  1. Opus   — Most thorough, catches subtle issues (slower)
+  2. Sonnet — Balanced speed and quality (recommended)
+  3. Haiku  — Fastest, may miss subtle issues
 ```
 
 **Question 3 — File Types:**
@@ -68,9 +68,9 @@ Directories to exclude? (comma-separated)
 **Question 5 — Severity Filter:**
 ```
 Minimum severity to report?
-  1. all      — Report everything (CRITICAL → INFO)
-  2. high     — Only CRITICAL and HIGH
-  3. critical — Only CRITICAL
+  1. All      — Report everything (CRITICAL → INFO)
+  2. High     — Only CRITICAL and HIGH
+  3. Critical — Only CRITICAL
 ```
 
 After ALL questions are answered, display a summary:
