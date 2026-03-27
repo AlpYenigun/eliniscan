@@ -86,9 +86,23 @@ After ALL questions are answered, display a summary:
   Starting scan...
 ```
 
-## STEP 2: Only AFTER setup is confirmed, follow the scan workflow
+## STEP 2: Generate and launch scan script
 
-@$HOME/.claude/eliniscan/workflows/scan.md
+After setup, you MUST:
+
+1. Discover files using `find` command (adapt extensions and excludes from user's answers)
+2. Create ELINISCAN-FINDINGS.md and ELINISCAN-TRACKING.md
+3. Write the scan script to `/tmp/eliniscan_run.sh` following the workflow at @$HOME/.claude/eliniscan/workflows/scan.md
+4. Launch it with: `nohup bash /tmp/eliniscan_run.sh > /tmp/eliniscan_scan.log 2>&1 &`
+
+**CRITICAL**: You MUST use `nohup ... &` to run the script in background. Do NOT run it in foreground — it will timeout. Do NOT use `run_in_background` parameter on Bash tool — use `nohup` directly in the command string.
+
+5. After launching, poll progress every 30 seconds:
+```bash
+cat /tmp/eliniscan_progress.txt 2>/dev/null && tail -3 /tmp/eliniscan_scan.log 2>/dev/null
+```
+
+6. When progress file contains "DONE", scan is complete.
 
 ## STEP 3: After scan completes, display:
 
