@@ -104,18 +104,46 @@ cat /tmp/eliniscan_progress.txt 2>/dev/null && tail -3 /tmp/eliniscan_scan.log 2
 
 6. When progress file contains "DONE", scan is complete.
 
-## STEP 3: After scan completes, display:
+## STEP 3: After scan completes, read ELINISCAN-FINDINGS.md and display results as a MARKDOWN TABLE:
 
+Count severities by grepping `**[CRITICAL]`, `**[HIGH]`, etc. from ELINISCAN-FINDINGS.md. Then display:
+
+```markdown
+## eliniscan Scan Complete
+
+| Metric | Value |
+|--------|-------|
+| Files scanned | {X} |
+| Clean files | {Y} |
+| Total issues | {Z} |
+
+### Severity Breakdown
+
+| Severity | Count |
+|----------|-------|
+| CRITICAL | {n} |
+| HIGH | {n} |
+| MEDIUM | {n} |
+| LOW | {n} |
+| INFO | {n} |
+| **Total** | **{sum}** |
+
+### Top Offenders (most issues)
+
+| File | Issues |
+|------|--------|
+| {file1} | {n} |
+| {file2} | {n} |
+| ... | ... |
+
+### Reports
+- `ELINISCAN-FINDINGS.md` — detailed findings with line numbers
+- `ELINISCAN-TRACKING.md` — file-by-file scan status
+
+### Next Steps
+- `/eliniscan:fix` — auto-fix all issues
+- `/eliniscan:report` — detailed summary report
 ```
-✓ Scan complete: {X} files scanned, {Y} issues found
 
-  CRITICAL: {n}  |  HIGH: {n}  |  MEDIUM: {n}  |  LOW: {n}
-
-  Reports:
-  - ELINISCAN-FINDINGS.md (detailed findings)
-  - ELINISCAN-TRACKING.md (file-by-file status)
-
-  Next: Run /eliniscan:fix to auto-fix issues
-        Run /eliniscan:report for a summary report
-```
+Use ACTUAL numbers from the findings file. Do NOT hardcode. Count with grep.
 </process>
