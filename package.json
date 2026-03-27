@@ -1,0 +1,48 @@
+{
+  "name": "eliniscan",
+  "version": "0.1.0",
+  "description": "AI-powered full codebase scanner. Opens a separate Claude session for every file — reads every line, misses nothing. Finds bugs, security vulnerabilities, performance issues, and code quality problems.",
+  "keywords": [
+    "audit",
+    "code-review",
+    "security",
+    "claude",
+    "claude-code",
+    "ai",
+    "codebase",
+    "scanner",
+    "bugs",
+    "vulnerability",
+    "performance",
+    "code-quality",
+    "skill"
+  ],
+  "author": "Alp Yenigun <alp@normbitkisel.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alpyenigun/eliniscan"
+  },
+  "homepage": "https://github.com/alpyenigun/eliniscan#readme",
+  "bugs": {
+    "url": "https://github.com/alpyenigun/eliniscan/issues"
+  },
+  "type": "module",
+  "scripts": {
+    "postinstall": "node scripts/install.js"
+  },
+  "bin": {
+    "eliniscan": "./scripts/cli.js"
+  },
+  "files": [
+    "commands/",
+    "workflows/",
+    "agents/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
