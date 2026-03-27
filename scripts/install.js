@@ -39,4 +39,35 @@ for (const { src, dest } of dirs) {
   }
 }
 
+// Add session start hook for update check
+import { readFileSync, writeFileSync } from "fs";
+
+const settingsPath = join(claudeDir, "settings.json");
+try {
+  let settings = {};
+  try {
+    settings = JSON.parse(readFileSync(settingsPath, "utf8"));
+  } catch {}
+
+  if (!settings.hooks) settings.hooks = {};
+  if (!settings.hooks.SessionStart) settings.hooks.SessionStart = [];
+
+  const hookCmd = `node ${join(claudeDir, "eliniscan", "scripts", "check-update.js")}`;
+  const hasHook = settings.hooks.SessionStart.some(
+    (h) => typeof h === "string" ? h.includes("eliniscan") : h.command?.includes("eliniscan")
+  );
+
+  if (!hasHook) {
+    settings.hooks.SessionStart.push({
+      command: hookCmd,
+      description: "eliniscan update check"
+    });
+    writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    console.log("✓ Update check hook added to settings.json");
+  }
+} catch (e) {
+  // Don't fail install if hook setup fails
+  console.log("⚠ Could not add update hook (non-critical)");
+}
+
 console.log("✓ eliniscan installed — commands available as /eliniscan:scan, /eliniscan:fix, etc.");
