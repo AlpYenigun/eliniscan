@@ -8,23 +8,39 @@
    - Read current file content
    - Extract that file's findings from ELINISCAN-FINDINGS.md
    - Send to Claude with fix prompt
-   - Write the fixed file directly (NO intermediate check)
+   - Validate output (is it code?)
+   - Write the fixed file
    - Log to `FIX-TRACKING.md`
 
 ### Fix Prompt Template
 
 ```
-You are a code fixer. Below is a file and the issues found in it.
-
-TASK: Fix ALL issues. Return the COMPLETE fixed file.
+You are a code fixer. Fix ALL issues listed below. Return the COMPLETE fixed file.
 
 RULES:
 1. ONLY fix the reported issues — change nothing else
-2. Do NOT change import/export signatures
+2. Do NOT change import/export signatures (breaking change)
 3. Do NOT add new dependencies
-4. Return ONLY code — no explanations, no markdown fences
-5. If a fix would break behavior, SKIP that fix
-6. Return the ENTIRE file, not just changed parts
+4. Do NOT add module-level throw statements — they crash Next.js build
+5. Do NOT wrap entire files in try/catch
+6. For missing env vars: use fallback values or runtime checks, NOT build-time throws
+7. Return ONLY code — no explanations, no markdown fences, no comments about fixes
+8. If a fix would break existing behavior, SKIP that fix
+9. Return the ENTIRE file, not just changed parts
+
+DANGEROUS PATTERNS TO AVOID:
+- throw new Error() at module level (outside functions) — crashes build
+- process.exit() — kills the process
+- Removing existing exports — breaks other files
+- Changing function parameter types — breaks callers
+
+SAFE FIX PATTERNS:
+- Add try/catch inside functions (NOT at module level)
+- Add await to async calls
+- Add null checks with ?.
+- Replace empty catch with console.error
+- Add input validation inside request handlers
+- Add rate limiting middleware
 
 ISSUES:
 {findings}
@@ -33,49 +49,88 @@ FILE ({path}):
 {content}
 ```
 
-### Validation — Code fence detection
+### Output Validation
 
-After receiving Claude's response, check:
-- If first line starts with ``` — remove first and last lines
-- If first line contains non-code text (Turkish/English explanation) — SKIP this file, log as FAILED
-- Quick check: first line should start with `import`, `"use`, `export`, `//`, `/*`, `const`, `let`, `var`, `function`, `class`, `interface`, `type`, `enum`, `{`, or be empty
+After receiving Claude's response, check BEFORE writing to disk:
 
-## Phase 2: Verify Scan
+```bash
+# Strip markdown fences
+if head -1 "$TEMP_FIX" | grep -q '^\`\`\`'; then
+  sed -i '' '1d' "$TEMP_FIX"
+  if tail -1 "$TEMP_FIX" | grep -q '^\`\`\`'; then
+    sed -i '' '$d' "$TEMP_FIX"
+  fi
+fi
 
-1. Get list of fixed files from FIX-TRACKING.md
-2. For each fixed file, run a mini-scan (same as main scan but only on changed files)
-3. If new issues found → fix them (one more pass)
+# Validate: first line must look like code
+FIRST_LINE=$(head -1 "$TEMP_FIX")
+if ! echo "$FIRST_LINE" | grep -qE '^(import |"use |export |//|/\*|const |let |var |function |class |interface |type |enum |\{|#|$)'; then
+  echo "REJECTED: output is not code"
+  # Do NOT write to file
+fi
 
-### Verify prompt:
+# Check for dangerous patterns
+if grep -q 'throw new Error' "$TEMP_FIX" | head -5 | grep -v 'function\|=>\|catch\|if\|else'; then
+  echo "WARNING: module-level throw detected"
+fi
 ```
-This file was just fixed. Check if the fixes introduced any NEW issues.
-If clean, write CLEAN. If new issues, report them.
+
+## Phase 2: Verify Scan (automatic after Phase 1)
+
+Re-scan ONLY the files that were fixed. Use the same `claude --print` approach but with a verify-specific prompt:
+
+```
+This file was just auto-fixed. Check for NEW issues introduced by the fix.
+Do NOT re-report the original issues — only NEW problems.
+Check specifically for:
+- Syntax errors from bad fix
+- Missing imports from changed code
+- Module-level throw statements (build crash)
+- Broken logic from incorrect fix
+- Removed functionality
+
+If clean: CLEAN
+If new issues found: report them.
 
 FILE ({path}):
 {content}
 ```
 
+If verify finds new issues → fix those too (one more pass only).
+
 ## Phase 3: Build Check
 
 ```bash
 echo "=== TypeScript Check ==="
-npx tsc --noEmit --pretty false 2>&1 | tail -20
+TSC_BEFORE=$(npx tsc --noEmit --pretty false 2>&1 | wc -l | tr -d ' ')
 
 echo "=== Build ==="
-npm run build 2>&1 | tail -20
-```
+BUILD_OUTPUT=$(npm run build 2>&1)
+BUILD_EXIT=$?
 
-Report results. If build fails, identify which files caused it.
+if [[ "$BUILD_EXIT" -eq 0 ]]; then
+  echo "BUILD PASSED"
+else
+  echo "BUILD FAILED"
+  # Show which files caused errors
+  echo "$BUILD_OUTPUT" | grep -E 'Error|error' | head -10
+fi
+```
 
 ## Completion Message
 
-```
-✓ eliniscan fix complete
+```markdown
+## eliniscan Fix Complete
 
-  Phase 1 (Fix):    {X} files fixed, {Y} skipped
-  Phase 2 (Verify): {Z} new issues found and fixed
-  Phase 3 (Build):  {PASS/FAIL}
+| Metric | Value |
+|--------|-------|
+| Files fixed | {X} |
+| Files skipped | {Y} |
+| Verify issues | {Z} |
+| Build | {PASS/FAIL} |
+| TSC errors | {before} → {after} |
 
-  Next: /eliniscan:scan    — full re-scan to verify
-        /eliniscan:report  — view summary
+### Next Steps
+- `/eliniscan:scan` — full re-scan to verify all fixes
+- `/eliniscan:report` — view complete summary
 ```

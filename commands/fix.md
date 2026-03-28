@@ -127,11 +127,14 @@ while IFS= read -r REL_PATH; do
 
 RULES:
 1. ONLY fix the reported issues — change nothing else
-2. Do NOT change import/export signatures
+2. Do NOT change import/export signatures (breaking change)
 3. Do NOT add new dependencies
-4. Return ONLY code — no explanations, no markdown fences
-5. If a fix would break behavior, SKIP that fix
-6. Return the ENTIRE file
+4. Do NOT add module-level throw statements — they crash Next.js build
+5. Do NOT wrap entire files in try/catch
+6. For missing env vars: use fallback values or runtime checks, NOT build-time throws
+7. Return ONLY code — no explanations, no markdown fences, no comments about what you fixed
+8. If a fix would break existing behavior, SKIP that fix
+9. Return the ENTIRE file
 
 ISSUES:
 $FILE_FINDINGS
