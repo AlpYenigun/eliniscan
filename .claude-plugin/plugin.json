@@ -1,0 +1,13 @@
+{
+  "name": "eliniscan",
+  "description": "AI-powered full codebase scanner. Opens a separate Claude session for every file — reads every line, misses nothing. Finds bugs, security vulnerabilities, performance issues, and auto-fixes them.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Alp Yenigun",
+    "email": "alp@normbitkisel.com"
+  },
+  "homepage": "https://github.com/AlpYenigun/eliniscan",
+  "repository": "https://github.com/AlpYenigun/eliniscan",
+  "license": "MIT",
+  "keywords": ["audit", "security", "scanner", "code-review", "bugs", "codebase", "line-by-line"]
+}

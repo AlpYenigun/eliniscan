@@ -1,0 +1,22 @@
+{
+  "name": "eliniscan",
+  "owner": {
+    "name": "Alp Yenigun",
+    "email": "alp@normbitkisel.com"
+  },
+  "metadata": {
+    "description": "AI full codebase scanner — separate session per file, reads every line, misses nothing",
+    "version": "0.2.0"
+  },
+  "plugins": [
+    {
+      "name": "eliniscan",
+      "source": ".",
+      "description": "Full codebase scan & auto-fix. Opens a separate Claude session for every file.",
+      "version": "0.2.0",
+      "category": "code-quality",
+      "tags": ["audit", "security", "scanner", "code-review", "bugs", "performance"],
+      "keywords": ["audit", "security", "scanner", "code-review", "line-by-line"]
+    }
+  ]
+}
