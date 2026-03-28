@@ -3,7 +3,7 @@ name: eliniscan:help
 description: Show available eliniscan commands and usage guide
 ---
 <objective>
-Display the eliniscan command reference. Output ONLY the reference below — no project analysis, no suggestions.
+Display the eliniscan command reference. Output ONLY the reference below.
 </objective>
 
 <process>
@@ -12,34 +12,41 @@ Output this exactly:
 ```
 ═══════════════════════════════════════════════════
   eliniscan — AI Full Codebase Scanner
+  https://github.com/alpyenigun/eliniscan
 ═══════════════════════════════════════════════════
 
-  COMMANDS
+  CORE COMMANDS
 
-  /eliniscan:scan     Full codebase scan (file by file, separate sessions)
-  /eliniscan:fix      Auto-fix all found issues (batch 500, verify, build)
-  /eliniscan:report   Show scan/fix summary with charts
-  /eliniscan:update   Check for updates and install latest version
-  /eliniscan:help     This help message
+  /eliniscan:scan       Full codebase scan (file by file, separate sessions)
+  /eliniscan:fix        Auto-fix all found issues (batch, verify, build)
+  /eliniscan:report     Show scan/fix summary with charts
+  /eliniscan:status     Show current progress (scan/fix running?)
+
+  MANAGEMENT
+
+  /eliniscan:resume     Resume interrupted scan or fix
+  /eliniscan:clean      Remove all generated files and reset state
+  /eliniscan:settings   View and modify configuration
+  /eliniscan:update     Check for updates and install latest version
+  /eliniscan:help       This help message
 
   SCAN OPTIONS
 
-  --depth full        Scan every line (default)
-  --depth quick       Scan only critical patterns
-  --model opus        Use Opus for scanning (thorough, slower)
-  --model sonnet      Use Sonnet for scanning (fast, default)
-  --model haiku       Use Haiku for scanning (fastest, less thorough)
-  --severity all      Report all severities (default)
-  --severity high     Report only CRITICAL and HIGH
+  --depth Full          Scan every line (default)
+  --depth Quick         Scan only critical patterns
+  --model Opus          Most thorough (slower)
+  --model Sonnet        Balanced (default, recommended)
+  --model Haiku         Fastest (may miss subtle issues)
+  --severity All        Report everything (default)
+  --severity High       Only CRITICAL and HIGH
 
   FIX OPTIONS
 
-  --severity critical Fix only CRITICAL issues
-  --severity high     Fix CRITICAL + HIGH
-  --severity all      Fix everything (default)
-  --batch-size 500    Findings per batch (default: 500)
-  --skip-verify       Skip verify scan after fix
-  --skip-build        Skip build check after fix
+  --severity Critical   Fix only CRITICAL issues
+  --severity High       Fix CRITICAL + HIGH
+  --severity All        Fix everything (default)
+  --model Opus          Most accurate fixes
+  --model Sonnet        Fast and reliable (default)
 
   WORKFLOW
 
@@ -48,21 +55,23 @@ Output this exactly:
   3. /eliniscan:fix           Auto-fix issues
   4. /eliniscan:scan          Re-scan to verify
 
+  If interrupted at any step: /eliniscan:resume
+
   FILES GENERATED
 
   ELINISCAN-FINDINGS.md     All issues with IDs (#001, #002...)
   ELINISCAN-TRACKING.md     File-by-file scan status
   FIX-TRACKING.md           Fix results per file
 
-  INSTALL
+  ARCHITECTURE
 
-  npm install -g eliniscan
-
-  ABOUT
-
-  eliniscan opens a separate Claude session for every file in your
-  codebase. Each file gets 100% of the context window — no skipping,
-  no summarizing, every line is read and analyzed.
+  - CLI tool:    ~/.claude/eliniscan/bin/eliniscan-tools.cjs
+  - Commands:    ~/.claude/commands/eliniscan/
+  - Workflows:   ~/.claude/eliniscan/workflows/
+  - Agents:      ~/.claude/agents/eliniscan-*.md
+  - References:  ~/.claude/eliniscan/references/
+  - Config:      ~/.claude/eliniscan/config.json
+  - State:       ~/.claude/eliniscan/state.json
 
   GitHub: https://github.com/alpyenigun/eliniscan
 ```

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-// eliniscan postinstall — copies commands and workflows to ~/.claude/
-import { mkdirSync, cpSync, existsSync, readdirSync } from "fs";
+// eliniscan installer — copies all components to ~/.claude/
+import { mkdirSync, cpSync, existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { homedir } from "os";
@@ -9,15 +9,21 @@ import { homedir } from "os";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 const claudeDir = join(homedir(), ".claude");
+const eliniscanDir = join(claudeDir, "eliniscan");
 
-const dirs = [
+// ─── Copy all components ───────────────────────────────────────────
+
+const copyMap = [
   { src: "commands", dest: join(claudeDir, "commands", "eliniscan") },
-  { src: "workflows", dest: join(claudeDir, "eliniscan", "workflows") },
-  { src: "agents", dest: join(claudeDir, "agents") },
-  { src: "scripts", dest: join(claudeDir, "eliniscan", "scripts") },
+  { src: "workflows", dest: join(eliniscanDir, "workflows") },
+  { src: "agents", dest: join(claudeDir, "agents"), prefix: "eliniscan-" },
+  { src: "references", dest: join(eliniscanDir, "references") },
+  { src: "bin", dest: join(eliniscanDir, "bin") },
+  { src: "scripts", dest: join(eliniscanDir, "scripts"), skip: ["install.js", "cli.js"] },
 ];
 
-for (const { src, dest } of dirs) {
+let copied = 0;
+for (const { src, dest, prefix, skip } of copyMap) {
   const srcPath = join(root, src);
   if (!existsSync(srcPath)) continue;
 
@@ -25,22 +31,19 @@ for (const { src, dest } of dirs) {
 
   const files = readdirSync(srcPath);
   for (const file of files) {
-    if (file === "install.js" || file === "cli.js") continue;
+    if (skip && skip.includes(file)) continue;
     const srcFile = join(srcPath, file);
-    const destFile = join(dest, file);
-
-    // For agents, prefix with eliniscan- to avoid conflicts
-    if (src === "agents") {
-      const agentDest = join(dest, `eliniscan-${file}`);
-      cpSync(srcFile, agentDest, { force: true });
-    } else {
-      cpSync(srcFile, destFile, { force: true });
-    }
+    const destFile = join(dest, prefix ? `${prefix}${file}` : file);
+    cpSync(srcFile, destFile, { force: true });
+    copied++;
   }
 }
 
-// Add session start hook for update check
-import { readFileSync, writeFileSync } from "fs";
+// ─── Copy package.json for version tracking ────────────────────────
+
+cpSync(join(root, "package.json"), join(eliniscanDir, "package.json"), { force: true });
+
+// ─── Setup session start hook ──────────────────────────────────────
 
 const settingsPath = join(claudeDir, "settings.json");
 try {
@@ -52,7 +55,7 @@ try {
   if (!settings.hooks) settings.hooks = {};
   if (!settings.hooks.SessionStart) settings.hooks.SessionStart = [];
 
-  const hookCmd = `node ${join(claudeDir, "eliniscan", "scripts", "check-update.js")}`;
+  const hookCmd = `node ${join(eliniscanDir, "scripts", "check-update.js")}`;
   const hasHook = settings.hooks.SessionStart.some(
     (h) => typeof h === "string" ? h.includes("eliniscan") : h.command?.includes("eliniscan")
   );
@@ -63,11 +66,12 @@ try {
       description: "eliniscan update check"
     });
     writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
-    console.log("✓ Update check hook added to settings.json");
   }
-} catch (e) {
-  // Don't fail install if hook setup fails
-  console.log("⚠ Could not add update hook (non-critical)");
-}
+} catch {}
 
-console.log("✓ eliniscan installed — commands available as /eliniscan:scan, /eliniscan:fix, etc.");
+// ─── Done ──────────────────────────────────────────────────────────
+
+console.log(`✓ eliniscan installed (${copied} files)`);
+console.log("  Commands: /eliniscan:scan, /eliniscan:fix, /eliniscan:report");
+console.log("  More:     /eliniscan:status, /eliniscan:resume, /eliniscan:clean, /eliniscan:settings");
+console.log("  Help:     /eliniscan:help");
