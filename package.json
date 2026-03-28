@@ -1,6 +1,6 @@
 {
   "name": "eliniscan",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI-powered full codebase scanner. Opens a separate Claude session for every file — reads every line, misses nothing. Finds bugs, security vulnerabilities, performance issues, and code quality problems.",
   "keywords": [
     "audit",
