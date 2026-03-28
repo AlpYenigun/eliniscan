@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "eliniscan",
-      "source": ".",
+      "source": "./",
       "description": "Full codebase scan & auto-fix. Opens a separate Claude session for every file.",
       "version": "0.2.0",
       "category": "code-quality",
