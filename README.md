@@ -1,5 +1,11 @@
 # eliniscan
 
+> **⚠️ Archived (August 2026).** This project is no longer maintained.
+>
+> It was a one-day prototype (March 2026) that ran a separate `claude --print` session per file via a bash loop. The idea — a fresh context per file so every line is actually read — is now a first-class capability in Claude Code itself (subagents and the Workflow tool), which makes this bash/`claude -p` implementation obsolete.
+>
+> Known limitations if you still read the code: the fix phase rewrites whole files (truncated output can corrupt files), per-file isolation causes false positives (the scanner can't see function signatures in other files), and a failed `claude` call is counted as "CLEAN". The package was never published to npm. Use the built-in `/code-review`, `/security-review`, or a Workflow-based per-file scan instead.
+
 **AI-powered full codebase scanner for [Claude Code](https://code.claude.com).** Opens a separate Claude session for every file — reads every line, misses nothing.
 
 > I had 942 files and 189,000 lines of code. No matter what I tried — agents, GSD workflows, manual prompting — Claude always skipped lines, summarized instead of reading, and produced shallow reports. After 10+ failed sessions, I built eliniscan. It opened 942 separate Claude sessions, one per file, each with a fresh 1M context window. 11 hours later: **3,894 real issues found**. Every line was actually read.
